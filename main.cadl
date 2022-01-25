@@ -5,12 +5,40 @@ import "@cadl-lang/openapi3";
 @serviceVersion("0.1.0")
 namespace Demo.HelloWorld;
 
-using Cadl.Http;
+using Cadl.Rest;
+using Cadl.Rest.Resource;
 
-@doc("Hello world service")
-@route("/hello")
-namespace Hello {
-  @doc("Returns 'hi'")
+model SchemaId {
+  id: string;
+}
+
+@doc("An error response received from the Azure Schema Registry service.")
+model Error {
+  error: ErrorDetail;
+}
+
+model ErrorDetail {
+  code: string;
+  message: string;
+  details?: ErrorDetail[];
+}
+
+model ErrorWithErrorCodeHeader {
+  ...Error;
+
+  @doc("Error code for specific error that occurred.")
+  @header
+  "x-ms-error-code": string;
+}
+
+@doc("Schema Registry service")
+@route("/schemaGroups")
+namespace SchemaGroups {
+  model SchemaGroups {
+    schemaGroups: SchemaGroups[];
+  }
+
+  alias SchemaGroup = string;
   @get
-  op sayHi(): OkResponse<"hi">;
+  op listSchemaGroups("api-version": string): OkResponse<string[]> | Error;
 }
